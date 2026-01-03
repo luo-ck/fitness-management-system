@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.TrainerVideoMapper">
+
+    <resultMap type="com.fitness.system.entity.TrainerVideo" id="TrainerVideoResult">
+        <result property="videoId" column="video_id" />
+        <result property="coachId" column="coach_id" />
+        <result property="title" column="title" />
+        <result property="description" column="description" />
+        <result property="videoUrl" column="video_url" />
+        <result property="uploadDate" column="upload_date" />
+    </resultMap>
+
+    <sql id="selectTrainerVideoVo">
+        select video_id, coach_id, title, description, video_url, upload_date from trainer_videos
+    </sql>
+
+    <select id="selectTrainerVideoById" parameterType="Long" resultMap="TrainerVideoResult">
+        <include refid="selectTrainerVideoVo" />
+        where video_id = #{videoId}
+    </select>
+
+    <select id="selectTrainerVideosByCoachId" parameterType="Long" resultMap="TrainerVideoResult">
+        <include refid="selectTrainerVideoVo" />
+        where coach_id = #{coachId}
+        order by upload_date desc
+    </select>
+
+    <insert id="insertTrainerVideo" parameterType="com.fitness.system.entity.TrainerVideo" useGeneratedKeys="true" keyProperty="videoId">
+        insert into trainer_videos
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="coachId != null">coach_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="description != null and description != ''">description,</if>
+            <if test="videoUrl != null and videoUrl != ''">video_url,</if>
+            upload_date
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="coachId != null">#{coachId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="description != null and description != ''">#{description},</if>
+            <if test="videoUrl != null and videoUrl != ''">#{videoUrl},</if>
+            <if test="uploadDate != null">#{uploadDate},</if>
+            <if test="uploadDate == null">CURRENT_TIMESTAMP,</if>
+        </trim>
+    </insert>
+
+    <update id="updateTrainerVideo" parameterType="com.fitness.system.entity.TrainerVideo">
+        update trainer_videos
+        <trim prefix="set" suffixOverrides=",">
+            <if test="coachId != null">coach_id = #{coachId},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="description != null and description != ''">description = #{description},</if>
+            <if test="videoUrl != null and videoUrl != ''">video_url = #{videoUrl},</if>
+            <if test="uploadDate != null">upload_date = #{uploadDate},</if>
+        </trim>
+        where video_id = #{videoId}
+    </update>
+
+    <delete id="deleteTrainerVideoById" parameterType="Long">
+        delete from trainer_videos
+        where video_id = #{videoId}
+    </delete>
+</mapper>

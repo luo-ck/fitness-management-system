@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.CoachApplicationMapper">
+    
+    <!-- 结果集映射 -->
+    <resultMap type="com.fitness.system.entity.CoachApplication" id="CoachApplicationResult">
+        <id property="id" column="id" />
+        <result property="userId" column="user_id" />
+        <result property="username" column="username" />
+        <result property="name" column="name" />
+        <result property="specialty" column="specialty" />
+        <result property="contact" column="contact" />
+        <result property="intro" column="intro" />
+        <result property="status" column="status" />
+        <result property="applyTime" column="apply_time" />
+        <result property="approveTime" column="approve_time" />
+        <result property="adminId" column="admin_id" />
+        <result property="adminName" column="admin_name" />
+        <result property="feedback" column="feedback" />
+    </resultMap>
+    
+    <!-- 插入教练申请 -->
+    <insert id="insertApplication" parameterType="com.fitness.system.entity.CoachApplication" useGeneratedKeys="true" keyProperty="id">
+        insert into coach_applications (user_id, username, name, specialty, contact, intro, status, apply_time)
+        values (#{userId}, #{username}, #{name}, #{specialty}, #{contact}, #{intro}, #{status}, #{applyTime})
+    </insert>
+    
+    <!-- 根据用户ID查询申请 -->
+    <select id="selectByUserId" parameterType="Long" resultMap="CoachApplicationResult">
+        select id, user_id, username, name, specialty, contact, intro, status, apply_time, approve_time, admin_id, admin_name, feedback
+        from coach_applications
+        where user_id = #{userId}
+    </select>
+    
+    <!-- 查询所有申请 -->
+    <select id="selectAllApplications" resultMap="CoachApplicationResult">
+        select id, user_id, username, name, specialty, contact, intro, status, apply_time, approve_time, admin_id, admin_name, feedback
+        from coach_applications
+        order by apply_time desc
+    </select>
+    
+    <!-- 根据ID查询申请 -->
+    <select id="selectById" parameterType="Long" resultMap="CoachApplicationResult">
+        select id, user_id, username, name, specialty, contact, intro, status, apply_time, approve_time, admin_id, admin_name, feedback
+        from coach_applications
+        where id = #{id}
+    </select>
+    
+    <!-- 更新申请状态为通过 -->
+    <update id="updateStatusToApproved" parameterType="com.fitness.system.entity.CoachApplication">
+        update coach_applications
+        set status = 'approved',
+            approve_time = #{approveTime},
+            admin_id = #{adminId},
+            admin_name = #{adminName}
+        where id = #{id}
+    </update>
+    
+    <!-- 更新申请状态为拒绝 -->
+    <update id="updateStatusToRejected" parameterType="com.fitness.system.entity.CoachApplication">
+        update coach_applications
+        set status = 'rejected',
+            approve_time = #{approveTime},
+            admin_id = #{adminId},
+            admin_name = #{adminName},
+            feedback = #{feedback}
+        where id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,1 @@
+UPDATE fitness.admins SET password_hash = '$2a$10$EIXhRjFqBdO0t0RjFqBdO0t0RjFqBdO0t0RjFqBdO0t0RjFqBdO' WHERE username = 'admin';

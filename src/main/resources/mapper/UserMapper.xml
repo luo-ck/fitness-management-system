@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.UserMapper">
+    
+    <!-- 结果集映射 -->
+    <resultMap type="com.fitness.system.entity.User" id="UserResult">
+        <id property="userId" column="user_id" />
+        <result property="username" column="name" />
+        <result property="age" column="age" />
+        <result property="gender" column="gender" />
+        <result property="height" column="height" />
+        <result property="weight" column="weight" />
+        <result property="contact" column="contact" />
+        <result property="goal" column="goal" />
+        <result property="passwordHash" column="password_hash" />
+        <result property="avatar" column="avatar" />
+        <result property="isDeleted" column="is_deleted" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+    
+    <!-- 根据用户ID查询用户 -->
+    <select id="selectUserByUserId" parameterType="Long" resultMap="UserResult">
+        select user_id, name, age, gender, height, weight, contact, goal, password_hash, avatar, is_deleted, created_at
+        from users
+        where user_id = #{userId} and is_deleted = 0
+    </select>
+    
+    <!-- 根据用户名查询用户 -->
+    <select id="selectUserByUsername" parameterType="String" resultMap="UserResult">
+        select user_id, name, age, gender, height, weight, contact, goal, password_hash, avatar, is_deleted, created_at
+        from users
+        where name = #{username} and is_deleted = 0
+    </select>
+    
+    <!-- 查询所有用户 -->
+    <select id="selectUserList" resultMap="UserResult">
+        select user_id, name, age, gender, height, weight, contact, goal, password_hash, avatar, is_deleted, created_at
+        from users
+        where is_deleted = 0
+        order by created_at desc
+    </select>
+    
+    <!-- 新增用户 -->
+    <insert id="insertUser" parameterType="com.fitness.system.entity.User" useGeneratedKeys="true" keyProperty="userId">
+        insert into users (name, password_hash, is_deleted)
+        values (#{username}, #{passwordHash}, #{isDeleted})
+    </insert>
+    
+    <!-- 修改用户 -->
+    <update id="updateUser" parameterType="com.fitness.system.entity.User">
+        update users
+        <set>
+            <if test="username != null and username != ''">name = #{username},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="gender != null and gender != ''">gender = #{gender},</if>
+            <if test="height != null">height = #{height},</if>
+            <if test="weight != null">weight = #{weight},</if>
+            <if test="contact != null and contact != ''">contact = #{contact},</if>
+            <if test="goal != null and goal != '' and (goal == '减脂' or goal == '增肌' or goal == '保持')">goal = #{goal},</if>
+            <if test="passwordHash != null and passwordHash != ''">password_hash = #{passwordHash},</if>
+            <if test="avatar != null and avatar != ''">avatar = #{avatar},</if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+        </set>
+        where user_id = #{userId}
+    </update>
+    
+    <!-- 删除用户 -->
+    <update id="deleteUserByUserId" parameterType="Long">
+        update users set is_deleted = 1 where user_id = #{userId}
+    </update>
+    
+    <!-- 批量删除用户 -->
+    <update id="deleteUserByUserIds" parameterType="Long[]">
+        update users set is_deleted = 1 where user_id in
+        <foreach item="userId" collection="array" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </update>
+    
+    <!-- 检查用户名是否唯一 -->
+    <select id="checkUsernameUnique" parameterType="String" resultMap="UserResult">
+        select user_id, name, is_deleted
+        from users
+        where name = #{username}
+    </select>
+</mapper>

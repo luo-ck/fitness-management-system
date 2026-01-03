@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.TrainingPlanMapper">
+
+    <resultMap type="com.fitness.system.entity.TrainingPlan" id="TrainingPlanResult">
+        <result property="planId" column="plan_id" />
+        <result property="userId" column="user_id" />
+        <result property="coachId" column="coach_id" />
+        <result property="planDate" column="plan_date" />
+        <result property="exerciseCount" column="exercise_count" />
+        <!-- 关联查询运动项 -->
+        <collection property="exercises" ofType="com.fitness.system.entity.TrainingPlanExercise" 
+                   select="com.fitness.system.mapper.TrainingPlanExerciseMapper.selectExercisesByPlanId" 
+                   column="plan_id" />        
+    </resultMap>
+
+    <sql id="selectTrainingPlanVo">
+        select 
+            tp.plan_id, 
+            tp.user_id, 
+            tp.coach_id, 
+            tp.plan_date,
+            (select count(*) from training_plan_exercise tpe where tpe.plan_id = tp.plan_id) as exercise_count
+        from training_plans tp
+    </sql>
+
+    <select id="selectTrainingPlanById" parameterType="Long" resultMap="TrainingPlanResult">
+        <include refid="selectTrainingPlanVo" />
+        where plan_id = #{planId}
+    </select>
+
+    <select id="selectTrainingPlansByStudentId" parameterType="Long" resultMap="TrainingPlanResult">
+        <include refid="selectTrainingPlanVo" />
+        where user_id = #{userId}
+        order by plan_date desc
+    </select>
+
+    <select id="selectTrainingPlansByCoachId" parameterType="Long" resultMap="TrainingPlanResult">
+        <include refid="selectTrainingPlanVo" />
+        where coach_id = #{coachId}
+        order by plan_date desc
+    </select>
+
+    <select id="selectTrainingPlanList" resultMap="TrainingPlanResult">
+        <include refid="selectTrainingPlanVo" />
+        order by plan_date desc
+    </select>
+
+    <insert id="insertTrainingPlan" parameterType="com.fitness.system.entity.TrainingPlan" useGeneratedKeys="true" keyProperty="planId">
+        insert into training_plans
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="coachId != null">coach_id,</if>
+            <if test="planDate != null">plan_date,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="coachId != null">#{coachId},</if>
+            <if test="planDate != null">#{planDate},</if>
+        </trim>
+    </insert>
+
+    <update id="updateTrainingPlan" parameterType="com.fitness.system.entity.TrainingPlan">
+        update training_plans
+        <trim prefix="set" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="coachId != null">coach_id = #{coachId},</if>
+            <if test="planDate != null">plan_date = #{planDate},</if>
+        </trim>
+        where plan_id = #{planId}
+    </update>
+
+    <delete id="deleteTrainingPlanById" parameterType="Long">
+        delete from training_plans
+        where plan_id = #{planId}
+    </delete>
+
+    <delete id="deleteTrainingPlanByIds" parameterType="Long[]">
+        delete from training_plans
+        where plan_id in
+        <foreach item="planId" collection="array" open="(" separator="," close=")">
+            #{planId}
+        </foreach>
+    </delete>
+</mapper>

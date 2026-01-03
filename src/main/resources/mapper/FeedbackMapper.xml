@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.FeedbackMapper">
+
+    <resultMap type="com.fitness.system.entity.Feedback" id="FeedbackResult">
+        <result property="feedbackId" column="feedback_id" />
+        <result property="userId" column="user_id" />
+        <result property="planId" column="plan_id" />
+        <result property="feeling" column="feeling" />
+        <result property="rating" column="rating" />
+        <result property="comments" column="comments" />
+        <result property="feedbackDate" column="feedback_date" />
+        <result property="planDate" column="plan_date" />
+    </resultMap>
+
+    <sql id="selectFeedbackVo">
+        select 
+            f.feedback_id, 
+            f.user_id, 
+            f.plan_id, 
+            f.feeling, 
+            f.rating, 
+            f.comments, 
+            f.feedback_date,
+            (select tp.plan_date from training_plans tp where tp.plan_id = f.plan_id) as plan_date
+        from feedbacks f
+    </sql>
+
+    <select id="selectFeedbackById" parameterType="Long" resultMap="FeedbackResult">
+        <include refid="selectFeedbackVo" />
+        where feedback_id = #{feedbackId}
+    </select>
+
+    <select id="selectFeedbacksByStudentId" parameterType="Long" resultMap="FeedbackResult">
+        <include refid="selectFeedbackVo" />
+        where user_id = #{userId}
+        order by feedback_id desc
+    </select>
+
+    <select id="selectFeedbacksByPlanId" parameterType="Long" resultMap="FeedbackResult">
+        <include refid="selectFeedbackVo" />
+        where plan_id = #{planId}
+        order by feedback_id desc
+    </select>
+
+    <select id="selectFeedbacksByCoachId" parameterType="Long" resultMap="FeedbackResult">
+        <include refid="selectFeedbackVo" />
+        where plan_id in (select plan_id from training_plans where coach_id = #{coachId})
+        order by feedback_id desc
+    </select>
+
+    <select id="selectFeedbackList" resultMap="FeedbackResult">
+        <include refid="selectFeedbackVo" />
+        order by feedback_id desc
+    </select>
+
+    <insert id="insertFeedback" parameterType="com.fitness.system.entity.Feedback" useGeneratedKeys="true" keyProperty="feedbackId">
+        insert into feedbacks
+        (user_id, plan_id, feeling, rating, comments, feedback_date)
+        values
+        (#{userId}, #{planId}, #{feeling}, #{rating}, #{comments}, IFNULL(#{feedbackDate}, CURRENT_TIMESTAMP))
+    </insert>
+
+    <update id="updateFeedback" parameterType="com.fitness.system.entity.Feedback">
+        update feedbacks
+        <trim prefix="set" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="planId != null">plan_id = #{planId},</if>
+            <if test="feeling != null and feeling != ''">feeling = #{feeling},</if>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="comments != null and comments != ''">comments = #{comments},</if>
+            <if test="feedbackDate != null">feedback_date = #{feedbackDate},</if>
+        </trim>
+        where feedback_id = #{feedbackId}
+    </update>
+
+    <delete id="deleteFeedbackById" parameterType="Long">
+        delete from feedbacks
+        where feedback_id = #{feedbackId}
+    </delete>
+
+    <delete id="deleteFeedbackByIds" parameterType="Long[]">
+        delete from feedbacks
+        where feedback_id in
+        <foreach item="feedbackId" collection="array" open="(" separator="," close=")">
+            #{feedbackId}
+        </foreach>
+    </delete>
+</mapper>

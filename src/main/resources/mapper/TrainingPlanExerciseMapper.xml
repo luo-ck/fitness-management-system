@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.TrainingPlanExerciseMapper">
+
+    <resultMap type="com.fitness.system.entity.TrainingPlanExercise" id="TrainingPlanExerciseResult">
+        <result property="id" column="id" />
+        <result property="planId" column="plan_id" />
+        <result property="exerciseId" column="exercise_id" />
+        <result property="sets" column="sets" />
+        <result property="reps" column="reps" />
+        <result property="duration" column="duration" />
+        <result property="orderIndex" column="order_index" />
+        <result property="videoId" column="video_id" />
+    </resultMap>
+
+    <sql id="selectTrainingPlanExerciseVo">
+        select id, plan_id, exercise_id, sets, reps, duration, order_index, video_id from training_plan_exercise
+    </sql>
+
+    <select id="selectExercisesByPlanId" parameterType="Long" resultMap="TrainingPlanExerciseResult">
+        <include refid="selectTrainingPlanExerciseVo" />
+        where plan_id = #{planId}
+        order by order_index asc
+    </select>
+
+    <insert id="insertTrainingPlanExercise" parameterType="com.fitness.system.entity.TrainingPlanExercise" useGeneratedKeys="true" keyProperty="id">
+        insert into training_plan_exercise
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="planId != null">plan_id,</if>
+            <if test="exerciseId != null">exercise_id,</if>
+            <if test="sets != null">sets,</if>
+            <if test="reps != null">reps,</if>
+            <if test="duration != null">duration,</if>
+            <if test="orderIndex != null">order_index,</if>
+            <if test="videoId != null">video_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="planId != null">#{planId},</if>
+            <if test="exerciseId != null">#{exerciseId},</if>
+            <if test="sets != null">#{sets},</if>
+            <if test="reps != null">#{reps},</if>
+            <if test="duration != null">#{duration},</if>
+            <if test="orderIndex != null">#{orderIndex},</if>
+            <if test="videoId != null">#{videoId},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsertTrainingPlanExercises" parameterType="java.util.List">
+        insert ignore into training_plan_exercise (plan_id, exercise_id, sets, reps, duration, order_index, video_id)
+        values
+        <foreach collection="exercises" item="exercise" separator=",">
+            (#{exercise.planId}, #{exercise.exerciseId}, #{exercise.sets}, #{exercise.reps}, #{exercise.duration}, #{exercise.orderIndex}, #{exercise.videoId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteExercisesByPlanId" parameterType="Long">
+        delete from training_plan_exercise
+        where plan_id = #{planId}
+    </delete>
+
+</mapper>

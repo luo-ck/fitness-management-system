@@ -1,0 +1,59 @@
+/* 颜色变量 */
+:root {
+  /* 主色调 */
+  --primary-color: #667eea;
+  --primary-color-dark: #764ba2;
+  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
+  
+  /* 辅助色 */
+  --success-color: #10b981;
+  --success-color-dark: #059669;
+  --success-gradient: linear-gradient(135deg, var(--success-color) 0%, var(--success-color-dark) 100%);
+  
+  --danger-color: #ef4444;
+  --danger-color-dark: #dc2626;
+  --danger-gradient: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-color-dark) 100%);
+  
+  --warning-color: #f59e0b;
+  --warning-color-dark: #d97706;
+  --warning-gradient: linear-gradient(135deg, var(--warning-color) 0%, var(--warning-color-dark) 100%);
+  
+  --info-color: #3b82f6;
+  --info-color-dark: #2563eb;
+  --info-gradient: linear-gradient(135deg, var(--info-color) 0%, var(--info-color-dark) 100%);
+  
+  /* 背景色 */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-gradient: linear-gradient(135deg, var(--bg-secondary) 0%, #e9ecef 100%);
+  
+  /* 文字颜色 */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-tertiary: #909399;
+  
+  /* 边框颜色 */
+  --border-color: #e9ecef;
+  --border-color-light: #f0f0f0;
+  
+  /* 阴影 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  
+  /* 圆角 */
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  
+  /* 间距 */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* 过渡 */
+  --transition: all 0.3s ease;
+}

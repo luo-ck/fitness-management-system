@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.AdminMapper">
+    
+    <!-- 结果集映射 -->
+    <resultMap type="com.fitness.system.entity.Admin" id="AdminResult">
+        <id property="adminId" column="admin_id" />
+        <result property="username" column="username" />
+        <result property="name" column="name" />
+        <result property="passwordHash" column="password_hash" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+    
+    <!-- 根据管理员ID查询管理员 -->
+    <select id="selectAdminByAdminId" parameterType="Long" resultMap="AdminResult">
+        select admin_id, username, name, password_hash, created_at
+        from admins
+        where admin_id = #{adminId}
+    </select>
+    
+    <!-- 根据用户名查询管理员 -->
+    <select id="selectAdminByUsername" parameterType="String" resultMap="AdminResult">
+        select admin_id, username, name, password_hash, created_at
+        from admins
+        where username = #{username}
+    </select>
+    
+    <!-- 查询所有管理员 -->
+    <select id="selectAdminList" resultMap="AdminResult">
+        select admin_id, username, name, password_hash, created_at
+        from admins
+        order by created_at desc
+    </select>
+    
+    <!-- 新增管理员 -->
+    <insert id="insertAdmin" parameterType="com.fitness.system.entity.Admin" useGeneratedKeys="true" keyProperty="adminId">
+        insert into admins (username, name, password_hash, created_at)
+        values (#{username}, #{name}, #{passwordHash}, #{createdAt})
+    </insert>
+    
+    <!-- 修改管理员 -->
+    <update id="updateAdmin" parameterType="com.fitness.system.entity.Admin">
+        update admins
+        <set>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="passwordHash != null and passwordHash != ''">password_hash = #{passwordHash},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+        </set>
+        where admin_id = #{adminId}
+    </update>
+    
+    <!-- 删除管理员 -->
+    <delete id="deleteAdminByAdminId" parameterType="Long">
+        delete from admins where admin_id = #{adminId}
+    </delete>
+    
+    <!-- 批量删除管理员 -->
+    <delete id="deleteAdminByAdminIds" parameterType="Long[]">
+        delete from admins where admin_id in
+        <foreach item="adminId" collection="array" open="(" separator="," close=")">
+            #{adminId}
+        </foreach>
+    </delete>
+    
+    <!-- 检查用户名是否唯一 -->
+    <select id="checkUsernameUnique" parameterType="String" resultMap="AdminResult">
+        select admin_id, username, name
+        from admins
+        where username = #{username}
+    </select>
+</mapper>

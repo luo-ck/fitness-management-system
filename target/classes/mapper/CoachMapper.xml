@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.CoachMapper">
+
+    <resultMap type="com.fitness.system.entity.Coach" id="CoachResult">
+        <result property="coachId"    column="coach_id"    />
+        <result property="username"  column="username"  />
+        <result property="name"      column="name"      />
+        <result property="specialty" column="specialty" />
+        <result property="contact"   column="contact"   />
+        <result property="intro"     column="intro"     />
+        <result property="passwordHash" column="password_hash" />
+        <result property="isVerified" column="is_verified" />
+        <result property="isDeleted" column="is_deleted" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+
+    <sql id="selectCoachVo">
+        select coach_id, username, name, specialty, contact, intro, password_hash, is_verified, is_deleted, created_at from coaches
+    </sql>
+
+    <select id="selectCoachByCoachId" parameterType="Long" resultMap="CoachResult">
+        <include refid="selectCoachVo" />
+        where coach_id = #{coachId} and is_deleted = 0
+    </select>
+
+    <select id="selectCoachByUsername" parameterType="String" resultMap="CoachResult">
+        <include refid="selectCoachVo" />
+        where username = #{username} and is_deleted = 0
+    </select>
+
+    <select id="selectCoachList" resultMap="CoachResult">
+        <include refid="selectCoachVo" />
+        where is_deleted = 0
+        order by created_at desc
+    </select>
+
+    <select id="selectValidCoachList" resultMap="CoachResult">
+        <include refid="selectCoachVo" />
+        where is_deleted = 0 and is_verified = 1
+        order by created_at desc
+    </select>
+
+    <insert id="insertCoach" parameterType="com.fitness.system.entity.Coach" useGeneratedKeys="true" keyProperty="coachId">
+        insert into coaches
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="username != null and username != ''">username,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="specialty != null and specialty != ''">specialty,</if>
+            <if test="contact != null and contact != ''">contact,</if>
+            <if test="intro != null and intro != ''">intro,</if>
+            <if test="passwordHash != null and passwordHash != ''">password_hash,</if>
+            <if test="isVerified != null">is_verified,</if>
+            <if test="isDeleted != null">is_deleted,</if>
+            created_at
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="username != null and username != ''">#{username},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="specialty != null and specialty != ''">#{specialty},</if>
+            <if test="contact != null and contact != ''">#{contact},</if>
+            <if test="intro != null and intro != ''">#{intro},</if>
+            <if test="passwordHash != null and passwordHash != ''">#{passwordHash},</if>
+            <if test="isVerified != null">#{isVerified},</if>
+            <if test="isDeleted != null">#{isDeleted},</if>
+            now()
+        </trim>
+    </insert>
+
+    <update id="updateCoach" parameterType="com.fitness.system.entity.Coach">
+        update coaches
+        <set>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="specialty != null and specialty != ''">specialty = #{specialty},</if>
+            <if test="contact != null and contact != ''">contact = #{contact},</if>
+            <if test="intro != null and intro != ''">intro = #{intro},</if>
+            <if test="passwordHash != null and passwordHash != ''">password_hash = #{passwordHash},</if>
+            <if test="isVerified != null">is_verified = #{isVerified},</if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+        </set>
+        where coach_id = #{coachId}
+    </update>
+
+    <delete id="deleteCoachByCoachId" parameterType="Long">
+        update coaches set is_deleted = 1 where coach_id = #{coachId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,1 @@
+UPDATE coaches SET password_hash = '$2a$10$x/6RdwZqPDaHaZyu5xA7jOVoweVAu8pMNv7DBp2ri7ld3b7UeVpwi' WHERE username = '老牛';

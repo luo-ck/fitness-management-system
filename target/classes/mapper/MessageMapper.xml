@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.MessageMapper">
+    
+    <!-- 插入消息 -->
+    <insert id="insertMessage" parameterType="com.fitness.system.entity.Message" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO message (
+            sender_id,
+            sender_name,
+            receiver_id,
+            receiver_type,
+            message_type,
+            related_id,
+            title,
+            content,
+            is_read,
+            send_time
+        ) VALUES (
+            #{senderId},
+            #{senderName},
+            #{receiverId},
+            #{receiverType},
+            #{messageType},
+            #{relatedId},
+            #{title},
+            #{content},
+            #{isRead},
+            COALESCE(#{sendTime}, NOW())
+        )
+    </insert>
+    
+    <!-- 根据接收者ID和类型查询消息列表 -->
+    <select id="selectMessagesByReceiver" resultType="com.fitness.system.entity.Message">
+        SELECT
+            id,
+            sender_id AS senderId,
+            sender_name AS senderName,
+            receiver_id AS receiverId,
+            receiver_type AS receiverType,
+            message_type AS messageType,
+            related_id AS relatedId,
+            title,
+            content,
+            is_read AS isRead,
+            send_time AS sendTime,
+            read_time AS readTime
+        FROM
+            message
+        WHERE
+            receiver_id = #{receiverId}
+            AND receiver_type = #{receiverType}
+        ORDER BY
+            send_time DESC
+    </select>
+    
+    <!-- 根据ID查询消息详情 -->
+    <select id="selectMessageById" parameterType="java.lang.Long" resultType="com.fitness.system.entity.Message">
+        SELECT
+            id,
+            sender_id AS senderId,
+            sender_name AS senderName,
+            receiver_id AS receiverId,
+            receiver_type AS receiverType,
+            message_type AS messageType,
+            related_id AS relatedId,
+            title,
+            content,
+            is_read AS isRead,
+            send_time AS sendTime,
+            read_time AS readTime
+        FROM
+            message
+        WHERE
+            id = #{id}
+    </select>
+    
+    <!-- 标记消息为已读 -->
+    <update id="updateMessageToRead" parameterType="java.lang.Long">
+        UPDATE message
+        SET
+            is_read = true,
+            read_time = now()
+        WHERE
+            id = #{id}
+    </update>
+    
+    <!-- 删除消息 -->
+    <delete id="deleteMessageById" parameterType="java.lang.Long">
+        DELETE FROM message
+        WHERE
+            id = #{id}
+    </delete>
+    
+    <!-- 获取用户的对话列表 -->
+    <select id="selectConversations" resultType="com.fitness.system.entity.Conversation">
+        SELECT 
+            uco.other_id AS otherId,
+            uco.other_name AS otherName,
+            uco.other_type AS otherType,
+            COALESCE(m.last_message, '') AS lastMessage,
+            COALESCE(m.last_message_time, uco.start_date) AS lastMessageTime,
+            COALESCE(m.unread_count, 0) AS unreadCount
+        FROM (
+            -- 查询所有绑定的教练或学员
+            SELECT 
+                uc.user_id AS current_user_id,
+                c.coach_id AS other_id,
+                c.name AS other_name,
+                'coach' AS other_type,
+                uc.start_date
+            FROM user_coach uc
+            LEFT JOIN coaches c ON uc.coach_id = c.coach_id
+            WHERE uc.user_id = #{userId} AND uc.is_active = true
+            UNION
+            SELECT 
+                uc.coach_id AS current_user_id,
+                u.user_id AS other_id,
+                u.name AS other_name,
+                'user' AS other_type,
+                uc.start_date
+            FROM user_coach uc
+            LEFT JOIN users u ON uc.user_id = u.user_id
+            WHERE uc.coach_id = #{userId} AND uc.is_active = true
+        ) uco
+        LEFT JOIN (
+            -- 查询每个对话的最后一条消息和未读消息数
+            SELECT
+                other_id,
+                last_message_time,
+                (SELECT content FROM message WHERE 
+                    ((sender_id = #{userId} AND receiver_id = other_id) OR (sender_id = other_id AND receiver_id = #{userId})) 
+                    AND send_time = last_message_time
+                    LIMIT 1) AS last_message,
+                unread_count
+            FROM (
+                SELECT
+                    CASE 
+                        WHEN sender_id = #{userId} THEN receiver_id 
+                        ELSE sender_id 
+                    END AS other_id,
+                    MAX(send_time) AS last_message_time,
+                    SUM(CASE WHEN receiver_id = #{userId} AND is_read = false THEN 1 ELSE 0 END) AS unread_count
+                FROM message m
+                WHERE (sender_id = #{userId} OR receiver_id = #{userId})
+                    AND sender_name != '管理员'
+                GROUP BY other_id
+            ) t
+        ) m ON uco.other_id = m.other_id
+        ORDER BY 
+            lastMessageTime DESC
+    </select>
+    
+    <!-- 获取特定对话的消息历史 -->
+    <select id="selectMessagesByConversation" resultType="com.fitness.system.entity.Message">
+        SELECT
+            id,
+            sender_id AS senderId,
+            sender_name AS senderName,
+            receiver_id AS receiverId,
+            receiver_type AS receiverType,
+            message_type AS messageType,
+            related_id AS relatedId,
+            title,
+            content,
+            is_read AS isRead,
+            send_time AS sendTime,
+            read_time AS readTime
+        FROM
+            message
+        WHERE
+            ((sender_id = #{userId} AND receiver_id = #{otherId})
+            OR (sender_id = #{otherId} AND receiver_id = #{userId}))
+            <if test="timestamp != null">
+                AND UNIX_TIMESTAMP(send_time) * 1000 > #{timestamp}
+            </if>
+        ORDER BY
+            send_time ASC
+    </select>
+</mapper>

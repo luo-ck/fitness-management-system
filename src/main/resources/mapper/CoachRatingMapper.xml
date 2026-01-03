@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fitness.system.mapper.CoachRatingMapper">
+    
+    <!-- 插入教练评价 -->
+    <insert id="insertCoachRating" parameterType="com.fitness.system.entity.CoachRating">
+        INSERT INTO coach_rating (
+            user_id, 
+            user_name, 
+            coach_id, 
+            rating, 
+            comment, 
+            create_time
+        ) VALUES (
+            #{userId}, 
+            #{userName}, 
+            #{coachId}, 
+            #{rating}, 
+            #{comment}, 
+            NOW()
+        )
+    </insert>
+    
+    <!-- 根据教练ID查询评价列表 -->
+    <select id="selectCoachRatingsByCoachId" parameterType="java.lang.Long" resultType="com.fitness.system.entity.CoachRating">
+        SELECT 
+            rating_id, 
+            user_id, 
+            user_name, 
+            coach_id, 
+            rating, 
+            comment, 
+            create_time
+        FROM 
+            coach_rating
+        WHERE 
+            coach_id = #{coachId}
+        ORDER BY 
+            create_time DESC
+    </select>
+    
+    <!-- 根据教练ID查询平均评分 -->
+    <select id="selectAverageRatingByCoachId" parameterType="java.lang.Long" resultType="java.lang.Double">
+        SELECT 
+            AVG(rating) AS averageRating
+        FROM 
+            coach_rating
+        WHERE 
+            coach_id = #{coachId}
+    </select>
+</mapper>
